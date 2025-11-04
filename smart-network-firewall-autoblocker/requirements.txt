@@ -1,6 +1,5 @@
-pandas
-streamlit
-matplotlib
-scikit-learn
-pyyaml
-
+pandas==2.2.2
+streamlit==1.39.0
+matplotlib==3.8.2
+scikit-learn==1.4.2
+pyyaml==6.0.2
