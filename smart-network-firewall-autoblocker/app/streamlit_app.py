@@ -1,21 +1,19 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from pathlib import Path
 from datetime import datetime, timedelta
 
 from app.detector import detect_events, DetectionConfig
 from app.utils import load_firewall_log, load_conn_log, write_block, read_blocklist, ensure_files
 
-
 st.set_page_config(page_title="Smart Network Firewall Auto-Blocker", layout="wide")
 
-st.title("🔐 Smart Network Firewall Auto-Blocker (Mock)")
-st.caption("Real-time style dashboard (Option A: simulated blocklist — no pfSense required)")
+st.title("🔐 Smart Network Firewall Auto-Blocker (Mock Dashboard)")
+st.caption("Realtime suspicious network detection + automatic blocklist simulation (no real pfSense needed).")
 
 ensure_files()
 
-# Sidebar configuration
+# ---- sidebar settings ----
 st.sidebar.header("Detection Settings")
 lat_win = st.sidebar.slider("Lateral window (minutes)", 5, 60, 10, 5)
 lat_min = st.sidebar.slider("Min distinct subnets", 2, 6, 2, 1)
@@ -30,11 +28,11 @@ cfg = DetectionConfig(
     brute_fail_threshold=bf_min
 )
 
-# Load logs
+# ---- load logs ----
 fw = load_firewall_log()
 conn = load_conn_log()
 
-# Show key metrics
+# ---- top metrics ----
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Firewall events", f"{len(fw):,}")
 col2.metric("Connections", f"{len(conn):,}")
@@ -42,14 +40,13 @@ unique_ips = conn['src_ip'].nunique() + conn['dst_ip'].nunique()
 col3.metric("Unique IPs observed", f"{unique_ips:,}")
 col4.metric("Blocklisted IPs", f"{len(read_blocklist()):,}")
 
-# Detection
+# ---- detection ----
 events = detect_events(fw, conn, cfg)
 
 st.subheader("Suspicious Events")
 if events.empty:
     st.info("No suspicious events detected with current thresholds.")
 else:
-    # Auto-block simulation
     block_now = st.checkbox("Auto-block events above threshold", value=True)
     blocked = read_blocklist()
     to_block = []
@@ -64,18 +61,13 @@ else:
 
     st.dataframe(events, use_container_width=True)
 
-    st.markdown("### Blocklist (simulated)")
+    st.markdown("### Current Blocklist (simulated)")
     st.code("\n".join(read_blocklist()) or "<empty>")
 
-# Simple time series: connections per minute
-st.subheader("Traffic Over Time (connections/min)")
+# ---- simple traffic trend ----
+st.subheader("Traffic Volume Trend")
 times = conn.set_index('timestamp').resample('1min').size()
-fig = plt.figure(figsize=(8, 3.2))
-plt.plot(times.index, times.values)
-plt.xlabel("time")
-plt.ylabel("connections/min")
-plt.tight_layout()
-st.pyplot(fig)
+st.line_chart(times)
 
 st.markdown("---")
-st.caption("Tip: You can regenerate logs via `python scripts/generate_mock_traffic.py` then refresh this page.")
+st.caption("Tip: Run `python scripts/generate_mock_traffic.py` locally to refresh logs.")
