@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from app.utils import load_firewall_log, load_conn_log, write_block, read_blocklist, ensure_files
 from app.detector import detect_events, DetectionConfig
+from app.utils import load_firewall_log, load_conn_log, write_block, read_blocklist, ensure_files
+
 
 
 st.set_page_config(page_title="Smart Network Firewall Auto-Blocker", layout="wide")
