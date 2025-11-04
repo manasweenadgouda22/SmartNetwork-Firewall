@@ -10,10 +10,17 @@ class DetectionConfig:
     lateral_window_min: int = 10    # time window in minutes to look for cross-subnet moves
     lateral_min_subnets: int = 2    # if a source hits >= this many distinct /24 subnets -> suspicious
     scan_min_ports: int = 8         # distinct ports from same src to same dst or many dsts
-    brute_fail_threshold: int = 6    # failed attempts per src
+    brute_fail_threshold: int = 6   # failed attempts per src
+
 
 def detect_events(fw: pd.DataFrame, conn: pd.DataFrame, cfg: DetectionConfig) -> pd.DataFrame:
     """Return a DataFrame of suspicious events with a score and reason."""
+
+    # -------- FIX TYPE ISSUE --------
+    fw['timestamp'] = pd.to_datetime(fw['timestamp'], errors='coerce')
+    conn['timestamp'] = pd.to_datetime(conn['timestamp'], errors='coerce')
+    # --------------------------------
+
     # Basic normalization
     df = conn.copy()
     df['is_internal_src'] = df['src_ip'].apply(is_internal)
@@ -28,7 +35,7 @@ def detect_events(fw: pd.DataFrame, conn: pd.DataFrame, cfg: DetectionConfig) ->
     tmp = df[df['is_internal_src'] & df['is_internal_dst']].copy()
     if not tmp.empty:
         tmp = tmp.set_index('timestamp').sort_index()
-        grouped = tmp.groupby('src_ip').rolling(window=window)['dst_subnet'].apply(lambda s: s.nunique(), raw=False).reset_index()
+        grouped = tmp.groupby('src_ip').rolling(window=window)['dst_subnet'].apply(lambda s: s.nunique()).reset_index()
         grouped.rename(columns={'dst_subnet': 'distinct_dst_subnets'}, inplace=True)
         merged = tmp.reset_index().merge(grouped, on=['timestamp','src_ip'], how='left')
         lateral_hits = merged[merged['distinct_dst_subnets'] >= cfg.lateral_min_subnets]
@@ -53,7 +60,7 @@ def detect_events(fw: pd.DataFrame, conn: pd.DataFrame, cfg: DetectionConfig) ->
             'src_ip': r['src_ip'],
             'dst_ip': r['dst_ip'],
             'event': 'port_scan_suspect',
-            'score': 70 + (r['distinct_ports'] - cfg.scan_min_ports) * 2,
+            'score': min(100, 70 + (r['distinct_ports'] - cfg.scan_min_ports) * 2),
             'detail': f"{r['distinct_ports']} distinct ports to {r['dst_ip']}"
         })
 
@@ -69,11 +76,9 @@ def detect_events(fw: pd.DataFrame, conn: pd.DataFrame, cfg: DetectionConfig) ->
                 'src_ip': r['src_ip'],
                 'dst_ip': 'multiple',
                 'event': 'bruteforce_suspect',
-                'score': 65 + (r['fail_count'] - cfg.brute_fail_threshold) * 3,
+                'score': min(100, 65 + (r['fail_count'] - cfg.brute_fail_threshold) * 3),
                 'detail': f"{int(r['fail_count'])} failed attempts"
             })
 
     out = pd.DataFrame(events).sort_values('timestamp') if events else pd.DataFrame(columns=['timestamp','src_ip','dst_ip','event','score','detail'])
-    if not out.empty:
-        out['score'] = out['score'].clip(upper=100)
     return out
