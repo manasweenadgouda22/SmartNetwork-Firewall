@@ -2,7 +2,8 @@ from __future__ import annotations
 import pandas as pd
 from dataclasses import dataclass
 from typing import List, Dict, Any
-from .utils import is_internal, subnet_of
+from app.utils import is_internal, subnet_of
+
 
 @dataclass
 class DetectionConfig:
