@@ -1,10 +1,8 @@
-# Smart Network Firewall Auto-Blocker (Option A — Mocked pfSense)
+# Smart Network Firewall Auto-Blocker 
 
 **Goal:** Detect suspicious cross-subnet activity and *simulate* auto-blocking by maintaining a local blocklist. Visualize everything with a real-time dashboard.
 
-> This is the "Option A (small/basic)" version — it uses sample logs (no real pfSense needed). You can later upgrade to a real firewall API connector.
 
----
 
 ## Features
 - Parses sample firewall and connection logs
