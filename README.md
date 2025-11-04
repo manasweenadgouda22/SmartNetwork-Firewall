@@ -1,76 +1,91 @@
-## ⭐ Smart Network Firewall AutoBlocker
+# Smart Network Firewall Auto-Blocker
 
-### 🚀 Project Summary
+A small SOC-style project where I analyze network traffic logs and automatically identify suspicious IPs.
+The goal is to act like a “mini firewall brain” that can detect abnormal connections and suggest which IPs should be blocked.
 
-This project is a **network security automation tool** that analyzes firewall log data and automatically detects suspicious traffic.
-It identifies risky IP addresses and prepares a recommended “block list” that network teams can use to protect the network faster.
-
-This project simulates how modern SOC/NOC teams automate threat detection in real life.
+I built this so I can practice network engineering concepts + security analysis in one project.
 
 ---
 
-### 🛡️ What this tool actually does
+## 🔍 What this tool does
 
-* reads firewall log data (sample logs included)
-* detects abnormal network behavior using Python + ML scoring
-* checks if the IP is internal or external based on subnet ranges
-* calculates a risk score for each IP
-* generates a list of IPs recommended for blocking
-* visualizes everything in a Streamlit dashboard
+1. I take raw connection logs (source IP, destination IP, timestamps, ports)
+2. I detect risky patterns (ex: too many connections, weird endpoints, repeated hits)
+3. I give a **risk score** for each IP
+4. I output a **block list** based on the score
+5. I visualize everything in a clean dashboard (Streamlit)
 
----
-
-### 🎯 Why this project is useful
-
-Networks generate thousands of events every minute.
-Doing manual log review takes time and is not scalable.
-
-This tool shows how first-level threat triage can be automated:
-
-**Detect → Score → Suggest Block**
-
-This reduces human effort and speeds up response during incidents.
+So this acts like a “thinking layer” on top of a firewall.
 
 ---
 
-### 🧰 Tech Stack
+## 🧠 Why this project matters (for Network Engineering)
 
-| Purpose                    | Tools                  |
-| -------------------------- | ---------------------- |
-| Programming                | Python                 |
-| Data Processing            | Pandas                 |
-| Detection Logic (basic ML) | Scikit-Learn           |
-| Dashboard / Visualization  | Streamlit + Matplotlib |
+This is not just coding.
+This project uses **real networking concepts**:
 
----
+| Networking Concept  | How I used it                                            |
+| ------------------- | -------------------------------------------------------- |
+| CIDR / Subnets      | I separate internal LAN traffic vs external internet IPs |
+| Ports + Services    | Some ports are high-risk and get more weight             |
+| Firewall logic      | I generate deny/allow style decisions                    |
+| Connection Behavior | scanning behavior gets higher risk                       |
+| Edge Defense        | block list prevents lateral movement early               |
 
-### 📚 What I learned by building this
-
-* How network traffic behaves (internal vs external subnets)
-* How to detect strange patterns in logs
-* How basic ML can support security decisions
-* How to build dashboards for SOC-style visibility
+This helped me understand how network engineers think before creating firewall rules.
 
 ---
 
-### 🔮 Future Enhancements
+## 📂 Project Structure
 
-* push block rules directly to pfSense / Fortinet firewall via API
-* read live Suricata IDS alerts
-* add more ML models for better accuracy
-
----
-
-### 👤 Author
-
-**Manaswee Balvant Nadgouda**
-Master’s Student — Information Technology
-Arizona State University
+```
+smart-network-firewall-autoblocker/
+ ├─ app/
+ │   ├─ streamlit_app.py        → dashboard UI
+ │   ├─ detector/
+ │   │    └─ detector.py        → risk scoring logic
+ │   └─ sample_logs.csv         → example traffic logs
+ └─ requirements.txt            → Python dependencies
+```
 
 ---
 
-### Status
+## 🚀 How to run locally
 
-This is a working prototype and can grow into a full firewall automation engine.
+```bash
+git clone <your_repo_link>
+cd smart-network-firewall-autoblocker
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m streamlit run app/streamlit_app.py
+```
 
+open your browser:
+**[http://localhost:8501](http://localhost:8501)**
 
+---
+
+## 🛠 Technologies I used
+
+* Python (pandas, matplotlib)
+* Streamlit (dashboard)
+* Basic network traffic logic
+* CIDR + subnet filtering
+* Basic anomaly scoring
+
+---
+
+## 🎓 Why I built this
+
+I wanted a practical project that shows I understand **network fundamentals** and **security operations** at the same time — but not too advanced so I can actually run it easily.
+
+This is perfect for me as a Masters student starting in network engineering, because I am applying core networking concepts in an actual working tool.
+
+---
+
+## ✅ Future Improvements (Next Steps)
+
+* auto-push block list into pfSense or FortiGate API
+* ML model to improve anomaly detection
+* add DNS log analysis
