@@ -1,9 +1,3 @@
-yes. I will make it more interesting, more modern wording, but still beginner friendly and very professional.
-
-copy paste THIS final README ↓↓
-
----
-
 ## ⭐ Smart Network Firewall AutoBlocker
 
 ### 🚀 Project Summary
